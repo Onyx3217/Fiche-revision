@@ -2,25 +2,36 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Fiches de révision</title>
+    <title>HelpUs – Fiches de révision IA</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-    <h1>Fiches de révision</h1>
-    <nav>
+<nav class="navbar">
+    <div class="logo">HelpUs</div>
+    <div class="links">
         <a href="index.html">Accueil</a>
         <a href="services.html">Services</a>
-        <a href="https://discord.gg/TON_INVITE">Discord</a>
-    </nav>
-</header>
+        <a href="revision.html">Fiches IA</a>
+        <a href="https://discord.gg/TON_INVITATION" target="_blank">Discord</a>
+    </div>
+</nav>
 
-<div class="container">
+<section class="section">
+    <h1>📚 Générateur de fiche de révision IA</h1>
+
     <textarea id="cours" placeholder="Colle ton cours ici..."></textarea>
-    <button onclick="generer()">Générer la fiche</button>
+    <button id="btn" onclick="generer()">Créer la fiche</button>
     <pre id="resultat"></pre>
-</div>
+
+    <p class="info">
+        🔒 Accès avancé réservé aux membres du serveur HelpUs.
+    </p>
+</section>
+
+<footer>
+    © 2025 HelpUs – Tous droits réservés
+</footer>
 
 <script src="script.js"></script>
 </body>
