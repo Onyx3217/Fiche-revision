@@ -1,16 +1,14 @@
 import os
 import requests
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Charger les variables d'environnement (.env en local, variables Render en ligne)
 load_dotenv()
 
-app = Flask(__name__, static_folder="frontend")
+app = Flask(__name__)
 CORS(app)
 
-# 🔑 Clé API Groq
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -20,26 +18,9 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-print("GROQ_API_KEY chargée :", GROQ_API_KEY is not None)
-
-
-# =========================
-# 🌍 ROUTES FRONTEND
-# =========================
-
 @app.route("/")
 def home():
-    return send_from_directory("frontend", "index.html")
-
-
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory("frontend", path)
-
-
-# =========================
-# 🤖 ROUTE API
-# =========================
+    return "HelpUs API en ligne ✅"
 
 @app.route("/fiche", methods=["POST"])
 def generer_fiche():
@@ -49,70 +30,42 @@ def generer_fiche():
     if not cours.strip():
         return jsonify({"error": "Cours manquant"}), 400
 
-    # 🧠 PROMPT GÉNÉRAL (TOUTES MATIÈRES)
     prompt = f"""
 Tu es un assistant pédagogique.
 
 Transforme le texte suivant en une FICHE DE RÉVISION CLAIRE et STRUCTURÉE,
 quel que soit le sujet (histoire, langues, sciences, etc.).
 
-Contraintes OBLIGATOIRES :
-- Utilise des TITRES courts
-- Utilise surtout des LISTES À PUCE
-- Explique avec des PHRASES SIMPLES
-- Mets les MOTS IMPORTANTS en MAJUSCULES
-- Pas de texte inutile
+Contraintes :
+- Titres courts
+- Listes à puces
+- Phrases simples
+- MOTS IMPORTANTS en MAJUSCULES
+- Pas de blabla inutile
 
-Structure OBLIGATOIRE :
+Structure :
 
 📌 Idées essentielles
-- ...
-
-📌 Notions / concepts importants
-- ...
-
+📌 Notions importantes
 📌 Points clés à retenir
-- ...
+📌 Questions de révision (5 à 8 avec réponses)
 
-📌 Questions de révision
-- 5 à 8 questions courtes AVEC leurs réponses
-
-Texte à transformer :
+Texte :
 {cours}
 """
 
     payload = {
         "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "user", "content": prompt}
-        ],
+        "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.4,
         "max_tokens": 700
     }
 
-    try:
-        response = requests.post(API_URL, headers=HEADERS, json=payload)
-        print("GROQ status :", response.status_code)
-        print("GROQ réponse :", response.text)
+    response = requests.post(API_URL, headers=HEADERS, json=payload)
+    result = response.json()
 
-        response.raise_for_status()
-        result = response.json()
-
-        fiche = result["choices"][0]["message"]["content"]
-        return jsonify({"fiche": fiche})
-
-    except Exception as e:
-        return jsonify({
-            "error": "Erreur API Groq",
-            "details": str(e),
-            "api_response": getattr(e.response, "text", None)
-        }), 500
-
-
-# =========================
-# 🚀 LANCEMENT (RENDER OK)
-# =========================
+    fiche = result["choices"][0]["message"]["content"]
+    return jsonify({"fiche": fiche})
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
