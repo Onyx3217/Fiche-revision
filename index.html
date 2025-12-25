@@ -1,38 +1,40 @@
-<header>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>HelpUs – Entraide & Révisions</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">HelpUs</div>
+    <div class="links">
+        <a href="index.html">Accueil</a>
+        <a href="services.html">Services</a>
+        <a href="revision.html">Fiches IA</a>
+        <a href="https://discord.gg/TON_INVITATION" target="_blank">Discord</a>
+    </div>
+</nav>
+
+<header class="hero">
     <h1>HelpUs</h1>
-    <p>Entraide, services Discord et fiches de révision intelligentes</p>
-    <a href="https://discord.gg/TON_INVITATION">Rejoindre le Discord</a>
+    <p>La plateforme d’entraide pour Discord, projets et études</p>
+    <a class="cta" href="revision.html">Tester les fiches IA</a>
 </header>
 
-<div class="container">
-    <div class="tool">
-        <h2>📚 Générateur de fiche de révision</h2>
-
-        <textarea id="cours" placeholder="Colle ton cours ici..."></textarea>
-
-        <button id="btn" onclick="generer()">Créer la fiche</button>
-
-        <pre id="resultat"></pre>
+<section class="section">
+    <h2>Pourquoi HelpUs ?</h2>
+    <div class="cards">
+        <div class="card">🤝 Entraide communautaire</div>
+        <div class="card">🛠 Aide serveurs Discord</div>
+        <div class="card">📚 Révisions intelligentes</div>
     </div>
-
-    <div class="services">
-        <div class="card">
-            <h3>🛠 Aide Discord</h3>
-            <p>Staff, développeurs, création de serveurs</p>
-        </div>
-
-        <div class="card">
-            <h3>📈 Réseaux sociaux</h3>
-            <p>Followers, visibilité, conseils</p>
-        </div>
-
-        <div class="card">
-            <h3>🤖 Outils IA</h3>
-            <p>Fiches de révision intelligentes</p>
-        </div>
-    </div>
-</div>
+</section>
 
 <footer>
     © 2025 HelpUs – Tous droits réservés
 </footer>
+
+</body>
+</html>
