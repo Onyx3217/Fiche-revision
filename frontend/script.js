@@ -1,31 +1,25 @@
 async function generer() {
     const cours = document.getElementById("cours").value;
     const resultat = document.getElementById("resultat");
-    const btn = document.getElementById("btn");
 
     if (!cours.trim()) {
-        resultat.textContent = "❌ Colle un cours d'abord";
+        resultat.textContent = "❌ Colle un cours";
         return;
     }
 
-    // UI chargement
-    btn.disabled = true;
-    resultat.textContent = "⏳ Génération en cours… (le serveur peut mettre 30s à démarrer)";
+    resultat.textContent = "⏳ Génération en cours...";
 
     try {
-        const response = await fetch("/fiche", {
+        const response = await fetch("https://fiche-revision.onrender.com/fiche", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ cours })
         });
 
         const data = await response.json();
+        resultat.textContent = data.fiche || data.error;
 
-        resultat.textContent = data.fiche || "❌ Erreur de génération";
-
-    } catch (error) {
-        resultat.textContent = "❌ Serveur indisponible (Render en veille ?)";
+    } catch {
+        resultat.textContent = "❌ Erreur serveur";
     }
-
-    btn.disabled = false;
 }
