@@ -8,14 +8,22 @@
 <body>
 
 <div class="container">
-    <h1>🤖 Fiche de révision IA</h1>
-    <p>Colle ton cours et obtiens une fiche claire.</p>
+    <h1>📘 Fiche de révision IA</h1>
+    <p class="subtitle">Colle ton cours et obtiens une fiche claire en quelques secondes.</p>
 
     <textarea id="cours" placeholder="Colle ton cours ici..."></textarea>
 
-    <button onclick="generer()">Créer la fiche</button>
+    <button id="btn" onclick="generer()">✨ Générer la fiche</button>
 
-    <pre id="resultat"></pre>
+    <!-- Loader -->
+    <div id="loader" class="loader hidden">
+        <div class="spinner"></div>
+        <p>⏳ Génération en cours…<br>
+        <span class="small">Le serveur peut mettre ~30s à démarrer</span></p>
+    </div>
+
+    <!-- Résultat -->
+    <div id="resultat" class="resultat hidden"></div>
 </div>
 
 <script src="script.js"></script>
