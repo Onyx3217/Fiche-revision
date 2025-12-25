@@ -1,123 +1,55 @@
-* {
-    box-sizing: border-box;
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 40px;
+    background: #0b0e1a;
 }
 
-body {
-    margin: 0;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #0f1220, #14173a);
-    color: #ffffff;
-}
-
-header {
-    text-align: center;
-    padding: 50px 20px;
-}
-
-header h1 {
-    font-size: 3rem;
-    margin-bottom: 10px;
-}
-
-header p {
-    opacity: 0.85;
-    font-size: 1.1rem;
-}
-
-header a {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 12px 26px;
-    background: #6c7bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 30px;
+.logo {
+    font-size: 22px;
     font-weight: bold;
 }
 
-header a:hover {
-    background: #5563c1;
+.links a {
+    margin-left: 20px;
+    color: white;
+    text-decoration: none;
+    opacity: 0.85;
 }
 
-.container {
-    max-width: 900px;
-    margin: auto;
-    padding: 30px;
+.links a:hover {
+    opacity: 1;
 }
 
-.tool {
-    background: #1c1f3a;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-
-.tool h2 {
+.hero {
     text-align: center;
-    margin-bottom: 20px;
+    padding: 80px 20px;
 }
 
-textarea {
-    width: 100%;
-    height: 220px;
-    padding: 16px;
-    border-radius: 12px;
-    border: none;
-    resize: none;
-    font-size: 16px;
-}
-
-button {
-    display: block;
-    margin: 25px auto;
-    padding: 14px 36px;
-    font-size: 16px;
+.hero .cta {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 14px 32px;
     background: #6c7bff;
     color: white;
-    border: none;
-    border-radius: 40px;
-    cursor: pointer;
+    border-radius: 30px;
+    text-decoration: none;
 }
 
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.section {
+    max-width: 1000px;
+    margin: auto;
+    padding: 40px 20px;
 }
 
-button:hover:not(:disabled) {
-    background: #5563c1;
-}
-
-pre {
-    background: #0b0e1a;
-    padding: 22px;
-    border-radius: 12px;
-    white-space: pre-wrap;
-    min-height: 150px;
-}
-
-.services {
+.cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
-    margin-top: 60px;
 }
 
-.card {
-    background: #1c1f3a;
-    padding: 25px;
-    border-radius: 14px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+.info {
     text-align: center;
-}
-
-.card h3 {
-    margin-bottom: 10px;
-}
-
-footer {
-    text-align: center;
-    padding: 30px;
-    opacity: 0.6;
-    font-size: 14px;
+    margin-top: 30px;
+    opacity: 0.7;
 }
