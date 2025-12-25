@@ -1,13 +1,13 @@
 import os
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Charger les variables d'environnement
+# Charger les variables d'environnement (.env en local, variables Render en ligne)
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="frontend")
 CORS(app)
 
 # 🔑 Clé API Groq
@@ -23,6 +23,24 @@ HEADERS = {
 print("GROQ_API_KEY chargée :", GROQ_API_KEY is not None)
 
 
+# =========================
+# 🌍 ROUTES FRONTEND
+# =========================
+
+@app.route("/")
+def home():
+    return send_from_directory("frontend", "index.html")
+
+
+@app.route("/<path:path>")
+def static_files(path):
+    return send_from_directory("frontend", path)
+
+
+# =========================
+# 🤖 ROUTE API
+# =========================
+
 @app.route("/fiche", methods=["POST"])
 def generer_fiche():
     data = request.get_json()
@@ -31,7 +49,7 @@ def generer_fiche():
     if not cours.strip():
         return jsonify({"error": "Cours manquant"}), 400
 
-    # 🧠 Prompt optimisé pour fiche de révision
+    # 🧠 PROMPT GÉNÉRAL (TOUTES MATIÈRES)
     prompt = f"""
 Tu es un assistant pédagogique.
 
@@ -42,7 +60,7 @@ Contraintes OBLIGATOIRES :
 - Utilise des TITRES courts
 - Utilise surtout des LISTES À PUCE
 - Explique avec des PHRASES SIMPLES
-- Mets les MOTS IMPORTANTS en majuscules
+- Mets les MOTS IMPORTANTS en MAJUSCULES
 - Pas de texte inutile
 
 Structure OBLIGATOIRE :
@@ -57,7 +75,7 @@ Structure OBLIGATOIRE :
 - ...
 
 📌 Questions de révision
-- 5 à 8 questions courtes avec leurs réponses
+- 5 à 8 questions courtes AVEC leurs réponses
 
 Texte à transformer :
 {cours}
@@ -91,5 +109,10 @@ Texte à transformer :
         }), 500
 
 
+# =========================
+# 🚀 LANCEMENT (RENDER OK)
+# =========================
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
