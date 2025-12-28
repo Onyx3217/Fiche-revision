@@ -1,6 +1,5 @@
 from flask import Blueprint, request, session, redirect, jsonify
-import requests
-import os
+import requests, os, secrets
 from urllib.parse import quote_plus
 from functools import wraps
 
@@ -17,11 +16,10 @@ GUILD_ID = os.getenv("DISCORD_GUILD_ID")
 REQUIRED_ROLE = os.getenv("DISCORD_REQUIRED_ROLE_ID")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-DISCORD_HEADERS = {
-    "Content-Type": "application/x-www-form-urlencoded",
+HEADERS = {
     "Accept": "application/json",
-    # ⚠️ OBLIGATOIRE pour éviter Cloudflare 1015
-    "User-Agent": "fiche-revision-app/1.0 (contact: theo)"
+    "Content-Type": "application/x-www-form-urlencoded",
+    "User-Agent": "fiche-revision-app/1.0"
 }
 
 # =========================
@@ -40,12 +38,16 @@ def login_required(f):
 # =========================
 @auth_bp.route("/login")
 def login():
+    state = secrets.token_urlsafe(32)
+    session["oauth_state"] = state
+
     return redirect(
         f"{DISCORD_API}/oauth2/authorize"
         f"?client_id={CLIENT_ID}"
         "&response_type=code"
         "&scope=identify"
         f"&redirect_uri={quote_plus(REDIRECT_URI)}"
+        f"&state={state}"
     )
 
 # =========================
@@ -54,10 +56,14 @@ def login():
 @auth_bp.route("/callback")
 def callback():
     code = request.args.get("code")
-    if not code:
-        return "OAuth error: no code", 400
+    state = request.args.get("state")
 
-    # ---- Exchange code → token ----
+    if not code or state != session.get("oauth_state"):
+        return "OAuth invalide (state)", 400
+
+    session.pop("oauth_state", None)
+
+    # ---- TOKEN ----
     token_res = requests.post(
         f"{DISCORD_API}/oauth2/token",
         data={
@@ -65,65 +71,51 @@ def callback():
             "client_secret": CLIENT_SECRET,
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": REDIRECT_URI,
-            "scope": "identify"
+            "redirect_uri": REDIRECT_URI
         },
-        headers=DISCORD_HEADERS,
+        headers=HEADERS,
         timeout=10
     )
-
-    # 🔥 LOGS CRUCIAUX
-    print("TOKEN STATUS:", token_res.status_code)
-    print("TOKEN TEXT:", token_res.text)
 
     if token_res.status_code != 200:
         return "Erreur OAuth Discord", 400
 
-    token_json = token_res.json()
-    access_token = token_json.get("access_token")
-
+    access_token = token_res.json().get("access_token")
     if not access_token:
         return "Token invalide", 401
 
-    # ---- Get user info ----
-    user_res = requests.get(
+    # ---- USER ----
+    user = requests.get(
         f"{DISCORD_API}/users/@me",
         headers={
             "Authorization": f"Bearer {access_token}",
-            "User-Agent": DISCORD_HEADERS["User-Agent"]
+            "User-Agent": HEADERS["User-Agent"]
         },
         timeout=10
-    )
+    ).json()
 
-    user = user_res.json()
     user_id = user.get("id")
-
     if not user_id:
-        return "Utilisateur Discord invalide", 401
+        return "Utilisateur invalide", 401
 
-    # ---- Get guild member (BOT TOKEN) ----
+    # ---- GUILD MEMBER ----
     member_res = requests.get(
         f"{DISCORD_API}/guilds/{GUILD_ID}/members/{user_id}",
         headers={
             "Authorization": f"Bot {BOT_TOKEN}",
-            "User-Agent": DISCORD_HEADERS["User-Agent"]
+            "User-Agent": HEADERS["User-Agent"]
         },
         timeout=10
     )
 
     if member_res.status_code != 200:
-        return "Impossible de vérifier le serveur Discord", 403
+        return "Accès serveur refusé", 403
 
-    member = member_res.json()
-    roles = member.get("roles", [])
-
-    print("ROLES USER:", roles)
-    print("ROLE REQUIS:", REQUIRED_ROLE)
-
+    roles = member_res.json().get("roles", [])
     if REQUIRED_ROLE not in roles:
-        return "⛔ Accès refusé : rôle requis", 403
+        return "⛔ Rôle requis manquant", 403
 
-    # ---- Session OK ----
+    # ---- SESSION OK ----
     session["authorized"] = True
     session["user_id"] = user_id
 
