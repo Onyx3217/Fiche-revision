@@ -37,9 +37,8 @@ def login():
 def callback():
     code = request.args.get("code")
     if not code:
-        return "OAuth error", 400
+        return "OAuth error: no code", 400
 
-    # Exchange code → token
     token_res = requests.post(
         f"{DISCORD_API}/oauth2/token",
         data={
@@ -51,37 +50,20 @@ def callback():
             "scope": "identify"
         },
         headers={"Content-Type": "application/x-www-form-urlencoded"}
-    ).json()
+    )
 
-    access_token = token_res.get("access_token")
+    # 🔥 LOG CRUCIAL
+    print("TOKEN STATUS:", token_res.status_code)
+    print("TOKEN TEXT:", token_res.text)
+
+    if token_res.status_code != 200:
+        return "Erreur OAuth Discord", 500
+
+    token_json = token_res.json()
+    access_token = token_json.get("access_token")
+
     if not access_token:
         return "Token invalide", 401
-
-    # User info
-    user = requests.get(
-        f"{DISCORD_API}/users/@me",
-        headers={"Authorization": f"Bearer {access_token}"}
-    ).json()
-
-    # Get member via BOT TOKEN (OBLIGATOIRE)
-    member = requests.get(
-        f"{DISCORD_API}/guilds/{GUILD_ID}/members/{user['id']}",
-        headers={"Authorization": f"Bot {BOT_TOKEN}"}
-    ).json()
-
-    roles = member.get("roles", [])
-
-    print("ROLES USER :", roles)
-    print("ROLE REQUIS :", REQUIRED_ROLE, type(REQUIRED_ROLE))
-
-    if REQUIRED_ROLE not in roles:
-        return "⛔ Accès refusé : rôle requis", 403
-
-    # Authorized
-    session["authorized"] = True
-    session["user_id"] = user["id"]
-
-    return redirect("/revision")
 
 @auth_bp.route("/logout")
 def logout():
