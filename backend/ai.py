@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, session
-from prompts import get_prompt
+from backend.prompts import get_prompt
 from openai import OpenAI
 import os
 

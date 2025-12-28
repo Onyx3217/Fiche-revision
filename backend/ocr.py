@@ -1,13 +1,11 @@
-# filepath: c:\Users\Champeley\Desktop\Fiche de révision\backend\ocr.py
 from flask import Blueprint, request, jsonify
-import pytesseract
-from PIL import Image
-import io
-
-# Spécifiez le chemin vers tesseract.exe (ajustez si nécessaire)
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+import requests
+import os
 
 ocr_bp = Blueprint('ocr', __name__)
+
+OCR_API_URL = "https://api.ocr.space/parse/image"
+OCR_API_KEY = os.getenv("OCR_API_KEY")
 
 @ocr_bp.route('/scan', methods=['POST'])
 def scan():
@@ -15,6 +13,22 @@ def scan():
         return jsonify({'error': 'Aucune image'}), 400
 
     file = request.files['image']
-    image = Image.open(io.BytesIO(file.read()))
-    text = pytesseract.image_to_string(image, lang='fra')
+
+    response = requests.post(
+        OCR_API_URL,
+        files={"file": file},
+        data={
+            "apikey": OCR_API_KEY,
+            "language": "fre",
+            "isOverlayRequired": False
+        }
+    )
+
+    result = response.json()
+
+    try:
+        text = result["ParsedResults"][0]["ParsedText"]
+    except (KeyError, IndexError):
+        return jsonify({'error': 'OCR échoué'}), 500
+
     return jsonify({'cours': text})
