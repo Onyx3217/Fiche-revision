@@ -27,9 +27,10 @@ app.config.update(
 CORS(app, supports_credentials=True)
 
 # Blueprints API
-app.register_blueprint(auth_bp)
-app.register_blueprint(ai_bp)
-app.register_blueprint(ocr_bp)
+app.register_blueprint(auth_bp, url_prefix="/auth")
+app.register_blueprint(ai_bp, url_prefix="/api/ai")
+app.register_blueprint(ocr_bp, url_prefix="/api/ocr")
+
 
 # =========================
 # FRONTEND ROUTES
