@@ -19,7 +19,7 @@ async function call(type) {
     button.disabled = true;
 
     try {
-        const res = await fetch(`http://localhost:5000/${type}`, {
+        const res = await fetch(`https://fiche-revision.onrender.com/${type}`, {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
@@ -61,7 +61,7 @@ async function scan(input) {
     result.textContent = "📷 Analyse de l’image en cours...";
 
     try {
-        const res = await fetch("http://localhost:5000/scan", {
+        const res = await fetch("https://fiche-revision.onrender.com/scan", {
             method: "POST",
             body: form
         });
