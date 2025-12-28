@@ -21,14 +21,17 @@ app = Flask(
     static_url_path=""            # permet /index.html direct
 )
 
+
 # Secret key (sessions)
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret_key")
 
-# Cookies (IMPORTANT pour Discord OAuth)
+IS_RENDER = os.getenv("RENDER") == "true"
+
 app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=os.getenv("RENDER") is not None
+    SESSION_COOKIE_SECURE=IS_RENDER
 )
+
 
 # CORS (cookies autorisés)
 CORS(app, supports_credentials=True)
@@ -46,6 +49,10 @@ app.register_blueprint(ocr_bp, url_prefix="/api/ocr")
 # =========================
 # FRONTEND ROUTES
 # =========================
+
+@app.route("/health")
+def health():
+    return "OK"
 
 @app.route("/")
 def index():
