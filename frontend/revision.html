@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mutual Help – Services fiches</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><i class="fas fa-hands-helping"></i> Mutual Help</div>
+        <div class="links">
+            <a href="index.html"><i class="fas fa-home"></i> Accueil</a>
+            <a href="services.html"><i class="fas fa-concierge-bell"></i> Services</a>
+            <a href="revision.html"><i class="fas fa-book"></i> Fiches</a>
+            <a href="https://discord.gg/bTTDQfEjF3" target="_blank"><i class="fab fa-discord"></i> Discord</a>
+        </div>
+    </nav>
+    <section class="section">
+        <h1 class="center-title"><i class="fas fa-graduation-cap"></i> Apps Révisions</h1>
+        <div class="input-row">
+            <textarea id="cours" placeholder="✏️ Colle ton cours ici ou prends une photo..."></textarea>
+            <label for="file-input" class="file-label"><i class="fas fa-camera"></i> <span id="file-text">Choisir une image</span></label>
+        </div>
+        <input type="file" id="file-input" accept="image/*" capture="environment" onchange="scan(this)" style="display: none;">
+        <input type="password" id="password" placeholder="Mot de passe" style="display: block; margin: 10px auto; padding: 10px; border-radius: 10px; border: none; background: #0b0e1a; color: white; text-align: center; width: 200px;">
+        <div class="button-row">
+            <button onclick="call('fiche')"><i class="fas fa-file-alt"></i> Fiche</button>
+            <button onclick="call('qcm')"><i class="fas fa-question-circle"></i> QCM</button>
+            <button onclick="call('flashcards')"><i class="fas fa-brain"></i> Flashcards</button>
+        </div>
+        <pre id="resultat"></pre>
+        <p class="info">🔒 Accès réservé aux membres autorisés du serveur Mutual Help.</p>
+    </section>
+    <footer>© 2025 Mutual Help – Tous droits réservés</footer>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
