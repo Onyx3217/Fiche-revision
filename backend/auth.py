@@ -58,8 +58,11 @@ def callback():
     code = request.args.get("code")
     state = request.args.get("state")
 
-    if not code or state != session.get("oauth_state"):
-        return "OAuth invalide (state)", 400
+    if not code or not state:
+        return "OAuth error", 400
+
+    if state != session.get("oauth_state"):
+        return "Invalid OAuth state", 400
 
     session.pop("oauth_state", None)
 
