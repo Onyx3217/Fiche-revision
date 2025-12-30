@@ -1,13 +1,9 @@
-from flask import Blueprint, request, session, redirect, jsonify
+from flask import Blueprint, request, session, redirect
 import requests, os, secrets
-from urllib.parse import quote_plus
-from functools import wraps
+from urllib.parse import urlencode
 
 auth_bp = Blueprint("auth", __name__)
 
-# =========================
-# CONFIG
-# =========================
 DISCORD_API = "https://discord.com/api"
 CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
 CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
@@ -17,21 +13,9 @@ REQUIRED_ROLE = os.getenv("DISCORD_REQUIRED_ROLE_ID")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 HEADERS = {
-    "Accept": "application/json",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "User-Agent": "fiche-revision-app/1.0"
+    "User-Agent": "fiche-revision-app/1.0",
+    "Content-Type": "application/x-www-form-urlencoded"
 }
-
-# =========================
-# DECORATOR
-# =========================
-def login_required(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if not session.get("authorized"):
-            return jsonify({"error": "Non autorisé"}), 401
-        return f(*args, **kwargs)
-    return wrapper
 
 # =========================
 # LOGIN
@@ -41,14 +25,15 @@ def login():
     state = secrets.token_urlsafe(32)
     session["oauth_state"] = state
 
-    return redirect(
-        f"{DISCORD_API}/oauth2/authorize"
-        f"?client_id={CLIENT_ID}"
-        "&response_type=code"
-        "&scope=identify"
-        f"&redirect_uri={quote_plus(REDIRECT_URI)}"
-        f"&state={state}"
-    )
+    params = {
+        "client_id": CLIENT_ID,
+        "response_type": "code",
+        "scope": "identify",
+        "redirect_uri": REDIRECT_URI,
+        "state": state
+    }
+
+    return redirect(f"{DISCORD_API}/oauth2/authorize?{urlencode(params)}")
 
 # =========================
 # CALLBACK
@@ -58,16 +43,12 @@ def callback():
     code = request.args.get("code")
     state = request.args.get("state")
 
-    if not code or not state:
-        return "OAuth error", 400
-
-    if state != session.get("oauth_state"):
-        return "Invalid OAuth state", 400
+    if not code or state != session.get("oauth_state"):
+        return "OAuth invalide", 400
 
     session.pop("oauth_state", None)
 
-    # ---- TOKEN ----
-    token_res = requests.post(
+    token = requests.post(
         f"{DISCORD_API}/oauth2/token",
         data={
             "client_id": CLIENT_ID,
@@ -80,45 +61,32 @@ def callback():
         timeout=10
     )
 
-    if token_res.status_code != 200:
+    if token.status_code != 200:
         return "Erreur OAuth Discord", 400
 
-    access_token = token_res.json().get("access_token")
-    if not access_token:
-        return "Token invalide", 401
+    access_token = token.json().get("access_token")
 
-    # ---- USER ----
     user = requests.get(
         f"{DISCORD_API}/users/@me",
-        headers={
-            "Authorization": f"Bearer {access_token}",
-            "User-Agent": HEADERS["User-Agent"]
-        },
-        timeout=10
+        headers={"Authorization": f"Bearer {access_token}"}
     ).json()
 
     user_id = user.get("id")
     if not user_id:
         return "Utilisateur invalide", 401
 
-    # ---- GUILD MEMBER ----
-    member_res = requests.get(
+    member = requests.get(
         f"{DISCORD_API}/guilds/{GUILD_ID}/members/{user_id}",
-        headers={
-            "Authorization": f"Bot {BOT_TOKEN}",
-            "User-Agent": HEADERS["User-Agent"]
-        },
-        timeout=10
+        headers={"Authorization": f"Bot {BOT_TOKEN}"}
     )
 
-    if member_res.status_code != 200:
-        return "Accès serveur refusé", 403
+    if member.status_code != 200:
+        return "Non membre du serveur", 403
 
-    roles = member_res.json().get("roles", [])
+    roles = member.json().get("roles", [])
     if REQUIRED_ROLE not in roles:
-        return "⛔ Rôle requis manquant", 403
+        return "Accès refusé", 403
 
-    # ---- SESSION OK ----
     session["authorized"] = True
     session["user_id"] = user_id
 
