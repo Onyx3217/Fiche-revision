@@ -1,6 +1,6 @@
 from flask import Blueprint, request, session, redirect
 import requests, os, secrets
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote_plus
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -30,7 +30,7 @@ def login():
         "response_type": "code",
         "scope": "identify",
         "redirect_uri": REDIRECT_URI,
-        "state": state
+        "state": state,
     }
 
     return redirect(f"{DISCORD_API}/oauth2/authorize?{urlencode(params)}")
@@ -43,10 +43,14 @@ def callback():
     code = request.args.get("code")
     state = request.args.get("state")
 
-    if not code or state != session.get("oauth_state"):
-        return "OAuth invalide", 400
+    if not code or not state:
+        return "Coucou", 400
+
+    if state != session.get("oauth_state"):
+        return "Invalid state", 400
 
     session.pop("oauth_state", None)
+
 
     token = requests.post(
         f"{DISCORD_API}/oauth2/token",
@@ -55,11 +59,13 @@ def callback():
             "client_secret": CLIENT_SECRET,
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": REDIRECT_URI
+            "redirect_uri": REDIRECT_URI,
+            "scope": "identify"
         },
         headers=HEADERS,
         timeout=10
     )
+
 
     if token.status_code != 200:
         return "Erreur OAuth Discord", 400
