@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+
+<header>
+  Connecté en tant que {{ user.username }}
+  <button onclick="logout()" style="float:right">Déconnexion</button>
+</header>
+
+<main style="padding:20px">
+  <textarea id="input" rows="6" style="width:100%"></textarea><br><br>
+
+  <button onclick="generate('fiche')">Fiche</button>
+  <button onclick="generate('flashcards')">Flashcards</button>
+  <button onclick="generate('qcm')">QCM</button>
+
+  <pre id="output"></pre>
+</main>
+
+</body>
+</html>

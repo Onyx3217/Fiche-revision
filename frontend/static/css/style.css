@@ -1,0 +1,25 @@
+body {
+  background: #1e1f22;
+  color: #ffffff;
+  font-family: "Inter", sans-serif;
+  margin: 0;
+}
+
+header {
+  background: #111214;
+  padding: 20px;
+  font-size: 20px;
+}
+
+button {
+  background: #5865f2;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #4752c4;
+}
