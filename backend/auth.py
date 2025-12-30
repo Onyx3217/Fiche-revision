@@ -66,7 +66,9 @@ def callback():
         timeout=10
     )
 
-
+    print("TOKEN STATUS:", token.status_code)
+    print("TOKEN BODY:", token.text)
+    
     if token.status_code != 200:
         return "Erreur OAuth Discord", 400
 
