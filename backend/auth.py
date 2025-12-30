@@ -1,6 +1,5 @@
 from flask import Blueprint, request, session, redirect
 import requests, os, secrets
-from urllib.parse import urlencode, quote_plus
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -30,10 +29,12 @@ def login():
         "response_type": "code",
         "scope": "identify",
         "redirect_uri": REDIRECT_URI,
-        "state": state,
+        "state": state
     }
 
-    return redirect(f"{DISCORD_API}/oauth2/authorize?{urlencode(params)}")
+    return redirect(f"{DISCORD_API}/oauth2/authorize", code=302, Response=None) if False else redirect(
+        f"{DISCORD_API}/oauth2/authorize?" + "&".join(f"{k}={requests.utils.quote(v)}" for k, v in params.items())
+    )
 
 # =========================
 # CALLBACK
@@ -44,35 +45,35 @@ def callback():
     state = request.args.get("state")
 
     if not code or not state:
-        return "Coucou", 400
+        return "Missing code/state", 400
 
     if state != session.get("oauth_state"):
-        return "Invalid state", 400
+        return "Invalid OAuth state", 400
 
     session.pop("oauth_state", None)
 
-
-    token = requests.post(
+    token_res = requests.post(
         f"{DISCORD_API}/oauth2/token",
         data={
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": REDIRECT_URI,
-            "scope": "identify"
+            "redirect_uri": REDIRECT_URI
         },
         headers=HEADERS,
         timeout=10
     )
 
-    print("TOKEN STATUS:", token.status_code)
-    print("TOKEN BODY:", token.text)
-    
-    if token.status_code != 200:
+    print("TOKEN STATUS:", token_res.status_code)
+    print("TOKEN BODY:", token_res.text)
+
+    if token_res.status_code != 200:
         return "Erreur OAuth Discord", 400
 
-    access_token = token.json().get("access_token")
+    access_token = token_res.json().get("access_token")
+    if not access_token:
+        return "Invalid token", 401
 
     user = requests.get(
         f"{DISCORD_API}/users/@me",
@@ -81,7 +82,7 @@ def callback():
 
     user_id = user.get("id")
     if not user_id:
-        return "Utilisateur invalide", 401
+        return "Invalid user", 401
 
     member = requests.get(
         f"{DISCORD_API}/guilds/{GUILD_ID}/members/{user_id}",
@@ -89,20 +90,16 @@ def callback():
     )
 
     if member.status_code != 200:
-        return "Non membre du serveur", 403
+        return "Not in guild", 403
 
-    roles = member.json().get("roles", [])
-    if REQUIRED_ROLE not in roles:
-        return "Accès refusé", 403
+    if REQUIRED_ROLE not in member.json().get("roles", []):
+        return "Role required", 403
 
     session["authorized"] = True
     session["user_id"] = user_id
 
     return redirect("/revision")
 
-# =========================
-# LOGOUT
-# =========================
 @auth_bp.route("/logout")
 def logout():
     session.clear()
